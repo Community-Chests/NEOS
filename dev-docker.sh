@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# dev-docker.sh — thin wrapper around docker compose for local NEOS development.
+# dev-docker.sh — thin wrapper around podman/docker compose for local NEOS development.
 #
 # NOTE (Windows users): Run this script inside Git Bash, WSL, or any Unix-compatible
 # shell. It will NOT work in plain cmd.exe or PowerShell without a bash interpreter.
@@ -15,17 +15,24 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+# Use podman if available, fall back to docker
+if command -v podman &>/dev/null; then
+  COMPOSE="podman compose"
+else
+  COMPOSE="docker compose"
+fi
+
 case "${1:-}" in
   --down)
     echo "Stopping and removing NEOS containers..."
-    docker compose down
+    $COMPOSE down
     ;;
   --logs)
-    docker compose logs -f
+    $COMPOSE logs -f
     ;;
   -d|--detach)
     echo "Building images and starting NEOS services in the background..."
-    docker compose up --build -d
+    $COMPOSE up --build -d
     echo ""
     echo "Services running:"
     echo "  Backend:  http://localhost:8000"
@@ -36,6 +43,6 @@ case "${1:-}" in
     ;;
   *)
     echo "Building images and starting NEOS services (Ctrl+C to stop)..."
-    docker compose up --build
+    $COMPOSE up --build
     ;;
 esac

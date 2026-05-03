@@ -10,7 +10,6 @@ services:
   neos-api:
     build:
       context: ./neos-operating-system
-      dockerfile: agent/Dockerfile
     image: neos-api:local
     container_name: neos-api
     restart: unless-stopped
@@ -29,14 +28,14 @@ services:
       context: ./charting-the-course
       dockerfile: Dockerfile
       args:
-        # Override the API URL so the frontend talks to the backend container.
-        # For production, replace with your real API URL.
-        VITE_API_URL: ${VITE_API_URL:-http://neos-api:8000}
+        # Empty — frontend uses relative /api paths; nginx proxies to neos-api:8000
+        VITE_API_URL: ""
     image: neos-frontend:local
     container_name: neos-frontend
     restart: unless-stopped
     env_file:
-      - ./charting-the-course/.env
+      - path: ./charting-the-course/.env
+        required: false
     ports:
       - "3000:3000"
     depends_on:
